@@ -1,0 +1,345 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>秋招个人刷题心得体会 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="花了一个月左右的时间把左程云的《程序员代码面试指南》刷了一遍，算上之前的《剑指offer》和leetcode，集中刷题阶段应该算告一段落了，在此打卡并总结一下自己的刷题心得。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="秋招个人刷题心得体会">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 秋招个人刷题心得体会</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>花了一个月左右的时间把左程云的《程序员代码面试指南》刷了一遍，算上之前的《剑指offer》和leetcode，集中刷题阶段应该算告一段落了，在此打卡并总结一下自己的刷题心得。</p>
+<a id="more"></a>
+<hr>
+<h2 id="《程序员代码面试指南》c-版Github地址："><a href="#《程序员代码面试指南》c-版Github地址：" class="headerlink" title="《程序员代码面试指南》c++版Github地址："></a>《程序员代码面试指南》c++版Github地址：</h2><p><a href="https://github.com/MingyeGao/CodeInterviewGuide" target="_blank" rel="noopener">https://github.com/MingyeGao/CodeInterviewGuide</a></p>
+<h2 id="关于一些刷题资料，我的感受"><a href="#关于一些刷题资料，我的感受" class="headerlink" title="关于一些刷题资料，我的感受"></a>关于一些刷题资料，我的感受</h2><p>在牛客网的讨论区，大家提起提升校招的笔试能力，一般会提到以下几样：</p>
+<p>《剑指offer》 、Leetcode、《程序员面试代码指南》</p>
+<p>提升代码能力，大家一般会首推《剑指offer》</p>
+<p>我自己刷过了《剑指offer》，《程序员代码面试指南》，在Leetcode上刷过一百多道题，说一下这几样在自己心里的排名。</p>
+<h3 id="《程序员代码面试指南》"><a href="#《程序员代码面试指南》" class="headerlink" title="《程序员代码面试指南》"></a>《程序员代码面试指南》</h3><p><img src="/images/5/程序员代码面试指南.jpg" alt></p>
+<p>个人强烈推荐左程云的《程序员代码面试指南》。这本书的题型都非常经典，而且按照各种题型有比较明确的划分。</p>
+<p>对于每道题的讲解都非常清晰，对于很多题都介绍了不止一种方法，并从时间复杂度和空间复杂度两方面对每道题进行了分析。因为提供了最佳解题思路，所以只要加以理解，自己的水平就能获得很大的提高。</p>
+<p>虽然书中提供的代码是java的，但代码的思路是相同的，c++的同学也可以很好地理解代码。</p>
+<p>其中虽然不泛一些“偏，难，怪”题目，不过大部分题目都是很高频的，遇到偏门题型就当开拓自己眼界了吧。</p>
+<p>总而言之，《程序员代码面试指南》是开始刷题的不二之选。不过题量较多，约150道，比较耗时。</p>
+<h3 id="《剑指offer》"><a href="#《剑指offer》" class="headerlink" title="《剑指offer》"></a>《剑指offer》</h3><p><img src="/images/5/剑指offer.jpg" alt></p>
+<p>《剑指offer》应该是牛客上呼声最高的一本书，不过个人感觉与《程序员代码面试指南相比》相差很多。</p>
+<p>首先代码看起来不是很舒服，有些啰嗦。其次题型也没有按照数据类型或者解题方案进行分类，给人一种混乱的感觉。</p>
+<p>题量约80道，如果时间不是很充分的话可以刷这本</p>
+<h3 id="Leetcode"><a href="#Leetcode" class="headerlink" title="Leetcode"></a>Leetcode</h3><p>专门为应聘而生的代码网站，截止目前有1100+道题。题库以每周若干道题的速度在增长着。</p>
+<p>如果之前没有任何积累，在秋招阶段指望刷完Leetcode显然是不现实的。</p>
+<p>建议先刷 Top Liked 100 Questions，这些题已经涵盖了面试的大部分经典题目。</p>
+<p>如果还有余力，可以按照标签，一个一个刷，集中联系。</p>
+<p>英文版的社区讨论氛围比较好，不过我在刷的时候遇到过一个问题：有时一个方案AC了，就不愿意看讨论区了，这样就错过了最佳解法。社区的讨论还是可以留意一下的。</p>
+<p>Leetcode每周日早上的竞赛也很不错，非常适合模仿笔试时时间紧迫的氛围。如果没有准时参赛，可以在有空时参加虚拟赛练习。</p>
+<p>需要注意的是，Leetcode的编程处理与大多数校招笔试环境不同。Leetcode是把解决问题的函数封装成了一个类，每次通过后台的输入进行判别。但是校招笔试环境一般需要从标准输入读取数据，多了一个处理数据的步骤，也许会有坑，一定要注意。</p>
+<h2 id="最后，关于校招笔试，我想说"><a href="#最后，关于校招笔试，我想说" class="headerlink" title="最后，关于校招笔试，我想说"></a>最后，关于校招笔试，我想说</h2><p>除非经过内推，笔试应该是进入互联网公司躲不掉的一道坎。</p>
+<p>笔试能力不是一蹴而就的，而是通过长时间积累获得的。如果之前没有搞过算法比赛，那么整个过程会很漫长，很辛苦。</p>
+<p>完全不能指望在笔试过程中灵机一动，想出之前没有接触过的题目。做题过程一般都是迅速产生思路，对复杂度进行一下分析，然后着手实现的。</p>
+<p>另外有很多快捷的代码写法，也是需要反复琢磨，参考别人的代码才能习得的，这些都是能力提升过程中不可或缺的过程。</p>
+<p>整个过程虽然艰难，不过如果坚持下来了，那么一定会非常享受自己成长的感觉^_^</p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/08/29/6.两种平衡二叉树的实现/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/06/18/4.Linux时间相关函数总结/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "秋招个人刷题心得体会",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-08-27 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/心得体会/">心得体会<span>1</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/c/">c++<span>5</span></a></li> <li><a href="/tags/校招/">校招<span>1</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

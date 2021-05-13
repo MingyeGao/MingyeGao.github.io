@@ -1,0 +1,442 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>MIT6.828 Lab1 笔记 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="MIT6.828 Lab1: C, Assembly, Tools, and Bootstrapping
+相应学习与总结笔记">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="MIT6.828 Lab1 笔记">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> MIT6.828 Lab1 笔记</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>MIT6.828 Lab1: C, Assembly, Tools, and Bootstrapping</p>
+<p>相应学习与总结笔记<br><a id="more"></a></p>
+<hr>
+<hr>
+<h2 id="PART-1-PC-Bootstrapr"><a href="#PART-1-PC-Bootstrapr" class="headerlink" title="PART 1: PC Bootstrapr"></a><strong>PART 1: PC Bootstrapr</strong></h2><p>这一部分主要是实验环境的配置，跟随教程操作即可</p>
+<p>实模式下的地址转换：</p>
+<p>物理地址 = 段基址*16 + 偏移量</p>
+<h2 id="PART-2-Boot-Loader"><a href="#PART-2-Boot-Loader" class="headerlink" title="PART 2: Boot Loader"></a><strong>PART 2: Boot Loader</strong></h2><blockquote>
+<p>  在6.828课程的系统中，boot loader<strong>包含两部分</strong>：一份汇编代码 <strong>boot/boot.s</strong> 和一份c代码 <strong>boot/main.c</strong> 。它们构成的boot loader主要有两个作用</p>
+<blockquote>
+<ol>
+<li><strong>将处理器从实模式切换道32位保护模式</strong>。在实模式中，处理器只能访问1MB物理空间，而在32位保护模式下，处理器可以访问1MB以上的物理空间。切换模式后，逻辑地址向物理地址的映射方式也发生了变化，（段基址：偏移量）转化需要的offset从16变为32。</li>
+<li>借由x86的特殊I/O指令，直接从IDE硬盘中<strong>读取内核程序</strong>。  </li>
+</ol>
+</blockquote>
+</blockquote>
+<h2 id="Exercise-3-的四个问题"><a href="#Exercise-3-的四个问题" class="headerlink" title="Exercise 3 的四个问题"></a><strong>Exercise 3 的四个问题</strong></h2><blockquote>
+<blockquote>
+<ul>
+<li>Q: <em>处理器是何时开始执行32位代码的？是什么机制使得处理器从16位转为32位？</em></li>
+<li>A: 如下图所示， 汇编操作将cr0寄存器的最后一位置为1，通过Intel手册我们可以知道，当cr0寄存器的最后一位为1时，开启保护模式。<br><img src="/images/8/Lab1-1.png" alt="avatar"></li>
+</ul>
+<hr>
+<hr>
+<ul>
+<li>Q: <em>boot loader 执行的最后一条指令是什么？它加载的kernel执行的第一条指令是什么？</em></li>
+<li>A: 如下图所示，这是boot loader执行的最后一条指令。这条指令转到了kernel程序的入口。<br><img src="/images/8/Lab1-2.png" alt="avatar"></li>
+<li>kernel执行的第一条指令如下图所示。<br><img src="/images/8/Lab1-3.png" alt="avatar"></li>
+</ul>
+<hr>
+<hr>
+<ul>
+<li>Q: <em>kernel的第一条指令在哪里？</em></li>
+<li>A: 根据上一张图，我们可以看到kernel第一条指令的地址在于 0x10000c</li>
+</ul>
+<hr>
+<ul>
+<li>Q: <em>boot loader在从硬盘读取内核时，它是怎样决定读取几个扇区的？它是怎样得知这个信息</em></li>
+<li>A: bootmain函数如下图所示，程序首先读取足够大的数据（程序中是SECTSIZE*8），判断要读取的数据是不是一个ELF数据，如果是，则读取程序头，从表征程序头的结构体里面的e_phnum成员得知要读取的数据数量。<br><img src="/images/8/Lab1-4.png" alt="avatar"></li>
+</ul>
+<hr>
+<hr>
+</blockquote>
+</blockquote>
+<h2 id="Exercise-5"><a href="#Exercise-5" class="headerlink" title="Exercise 5"></a><strong>Exercise 5</strong></h2><blockquote>
+<blockquote>
+<p> linker的地址改变，从结果上来看，kernel无法被加载进内存，现象如下图所示<br><img src="/images/8/Lab1-5.png" alt="avatar"><br> 我在这里将链接地址从0x7c00改成了0x7cd0，用gdb跟踪程序，会发现boot loader的起始地址变为了我们改成的0x7cd0，如下图所示<br><img src="/images/8/Lab1-6.png" alt="avatar"><br> 将链接地址修改成不同的值会出现不同的问题，但最终都会导致程序循环，无法正确加载kernel程序</p>
+</blockquote>
+</blockquote>
+<h2 id="Exercise-6"><a href="#Exercise-6" class="headerlink" title="Exercise 6"></a><strong>Exercise 6</strong></h2><blockquote>
+<p> 将断点打在boot loader的起始位置，观察地址0x100000，可以看出这一地址的数据全部为0。当程序进入kernel后，发现指定的地址位置出现了数据。原因可能是boot loader 将kernel加载进了内存，所以相应位置的数据出现了变化；</p>
+</blockquote>
+<h2 id="Exercise-7"><a href="#Exercise-7" class="headerlink" title="Exercise 7"></a><strong>Exercise 7</strong></h2><blockquote>
+<p> 在执行指令 movl %eax, %cr0 之前， 两个地址对应的数值如下图所示地址空间</p>
+<blockquote>
+<p><img src="/images/8/Lab1-8.png" alt="avatar"><br> 在执行指令过后， 两个地址对应的数值如下图所示地址空间<br><img src="/images/8/Lab1-9.png" alt="avatar"></p>
+</blockquote>
+</blockquote>
+<p>执行指令前两个地址空间对应的数据不同，而执行指令后两个地址空间对应的数据相同，说明开启分页机制后这两个虚拟地址被映射成了同一个物理地址。</p>
+<blockquote>
+<hr>
+<p> 注释掉这条指令重新编译，从结果上来看，硬件启动失败，直接退出<br> gdb跟踪发现是一条jmp指令出错了，因为跳转过后的地址是一个无效地址。</p>
+</blockquote>
+<hr>
+<h2 id="PART-3-The-Kernel"><a href="#PART-3-The-Kernel" class="headerlink" title="PART 3: The Kernel"></a><strong>PART 3: The Kernel</strong></h2><blockquote>
+<p> <strong>kern/printf.c, lib/printfmt.c 和 kern/console.c三个文件的关系</strong></p>
+<blockquote>
+<p> kern/console.c 最底层，用了大量汇编语言编写，主要是适配于硬件的屏幕输出；<br> kern/printf.c 使用了console.c中的底层函数；<br> lib/printfmt.c 的函数最上层，封装了内核中的函数，可以供上层使用。</p>
+</blockquote>
+</blockquote>
+<h2 id="Exercise-8"><a href="#Exercise-8" class="headerlink" title="Exercise 8"></a><strong>Exercise 8</strong></h2><blockquote>
+<blockquote>
+<p> 需要修改的代码在lib/printfmt.c中，改变后的代码为<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; <span class="keyword">case</span> <span class="string">'o'</span>:</span><br><span class="line">&gt;&gt; <span class="comment">// Replace this with your code.</span></span><br><span class="line">&gt;&gt;      <span class="comment">/*</span></span><br><span class="line"><span class="comment">&gt;&gt;      putch('X', putdat);</span></span><br><span class="line"><span class="comment">&gt;&gt;      putch('X', putdat);</span></span><br><span class="line"><span class="comment">&gt;&gt;      putch('X', putdat);</span></span><br><span class="line"><span class="comment">&gt;&gt;      break;</span></span><br><span class="line"><span class="comment">&gt;&gt;      */</span></span><br><span class="line">&gt;&gt;      num = getuint(&amp;ap, lflag);</span><br><span class="line">&gt;&gt;      base = <span class="number">8</span>;</span><br><span class="line">&gt;&gt;      <span class="keyword">goto</span> number;</span><br><span class="line">&gt;&gt;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p> 模仿上方的代码即可写出，下面是问题的回答</p>
+<ol>
+<li>console.c 导出了 cputchar 函数供 printf.c 使用，cputchar封装在了 putch 函数中。</li>
+<li>下面代码处理的情况是：屏幕上已经充满了字符，若现在的操作需要向屏幕再次输入字符，则需要进行的动作是：1.所有的字符向上移动一行 2.最后一行清空。这段代码实现的就是这个功能。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; <span class="keyword">if</span> (crt_pos &gt;= CRT_SIZE) &#123;<span class="comment">//*如果目前屏幕上的字符数超过了屏幕的容量</span></span><br><span class="line">&gt;&gt;     <span class="keyword">int</span> i;</span><br><span class="line">&gt;&gt;     memmove(crt_buf, crt_buf + CRT_COLS, (CRT_SIZE - CRT_COLS) * <span class="keyword">sizeof</span>(<span class="keyword">uint16_t</span>));<span class="comment">//* 将从第二行开始的内容移动到第一行去</span></span><br><span class="line">&gt;&gt;     <span class="keyword">for</span> (i = CRT_SIZE - CRT_COLS; i &lt; CRT_SIZE; i++)</span><br><span class="line">&gt;&gt;         crt_buf[i] = <span class="number">0x0700</span> | <span class="string">' '</span>;<span class="comment">//*最后一行的内容清零，由上文的内容可知，对0x700进行或操作与显示的色彩有关</span></span><br><span class="line">&gt;&gt;     crt_pos -= CRT_COLS;</span><br><span class="line">&gt;&gt;&#125;</span><br><span class="line">&gt;&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<ol start="3">
+<li>我将文中提及到的代码段加在了 kern/init.c 中，因为前方有明显的屏幕打印值，所以可以很方便地找到要追踪地语句地位置。把断点打在 cpirntf 上。<ul>
+<li>在 cprintf 函数内，fmt指向的是字符串 “x %d, y %x, z %d\n” 的地址。函数原型中没有ap，所以这里ap也打印不出来，如下图所示<br><img src="/images/8/Lab1-10.png" alt="avatar"></li>
+<li>在 vcprintf 函数内，fmt指向的是字符串 “x %d, y %x, z %d\n” 的地址。ap指向一个地址，这个地址分别放有 x, y, z 的值，如下图所示<br><img src="/images/8/Lab1-11.png" alt="avatar"></li>
+<li>cons_putc 中，变量是一个char型</li>
+<li>va_arg 是一个宏定义，gdb无法在之上直接打断点。进入vprintfmt逐步跟踪后，可以看到每次va_arg后，ap都是指向下一个变量的地址<br><img src="/images/8/Lab1-12.png" alt="avatar"></li>
+</ul>
+</li>
+<li>输出变成了 He110 World 。57616化成16进制是e110， 72，6c，64分别是rld的ascii码，如果在大端序的cpu上运行，则 Wo后面不会显示字符。</li>
+<li>虽然输入y没有对应的值，但还是会打印栈上的内容，在信心安全领域这种叫做格式化字符串漏洞，用于泄露栈上信息。</li>
+<li>函数原型声明为 cprintf(const char *fmt, va_list ap)；</li>
+</ol>
+</blockquote>
+</blockquote>
+<h2 id="Exercise-11-12"><a href="#Exercise-11-12" class="headerlink" title="Exercise 11 12"></a><strong>Exercise 11 12</strong></h2><blockquote>
+<blockquote>
+<p> 要通过寄存器追溯函数调用栈，首先要弄懂一些细节：<br> <strong>1.pop 和 push 指令的操作顺序</strong></p>
+<ul>
+<li>push: 先减小esp寄存器里的值，再将要压入的数据写入到esp寄存器指向的地址；</li>
+<li>pop: 先读出esp寄存器指向地址的值，再增加esp寄存器的值</li>
+<li><strong>读写与寄存器值改变， 这两个顺序不要弄错了</strong></li>
+</ul>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p> <strong>2.即将进行函数调用时，进行的压栈操作</strong></p>
+<ul>
+<li>首先按照参数的声明顺序，将参数压入栈中（关于压栈的顺序，可能根据编译器有所不同；32位操作系统下函数传参需要通过压栈，64位cpu寄存器资源丰富，传参直接用寄存器）。</li>
+<li>然后压入返回地址eip，传参和压入eip都是在call函数之前实现的</li>
+<li>最后将esp地址传递给ebp，并将ebp的值压入栈中。注意，这一部是在被调函数中实现的。</li>
+</ul>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<h2 id="3-栈的生长方向，从高地址向低地址生长"><a href="#3-栈的生长方向，从高地址向低地址生长" class="headerlink" title=" 3.栈的生长方向，从高地址向低地址生长"></a> <strong>3.栈的生长方向，从高地址向低地址生长</strong></h2><p> 关于在调用时显示符号信息，这个实验中的要求比较简单，已经写好了 stab_binsearch 函数，只需要利用即可，相应的代码中也有提示。<br> 有一点需要注意的是，stab结构体中有很多成员，哪一项显示的是eip地址的行号呢，通过验证，我们可以得知是 n_value 这个变量，如果使用了其他变量，make grade 也能通过，不过返回地址是不正确的。具体看程序吧<br> <strong>kern/kdebug.c</strong>中代码如下图所示<br><img src="/images/8/Lab1-13.png" alt="avatar"><br> <strong>kern/monitor.c</strong>中代码如下图所示<br><img src="/images/8/Lab1-14.png" alt="avatar"><br> make qemu 的结果如下图所示<br><img src="/images/8/Lab1-15.png" alt="avatar"><br> 通过查看 obj/kernel.asm ，我们判断 test_backtrace 的返回地址应该是基地址+0x28, 即十进制的40， 与实验结果相符。<br> <strong>make grade, 实验通过！！</strong><br><img src="/images/8/Lab1-16.png" alt="avatar"></p>
+</blockquote>
+</blockquote>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/10/11/9.MIT6.828-hw1/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/08/31/7.C++实现一个简单的红黑树/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "MIT6.828 Lab1 笔记",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-10-11 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/操作系统/">操作系统<span>8</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/MIT6-828/">MIT6.828<span>8</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>mongoDB M001课程学习笔记 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="mongoDB官方课程 「MOO1 MongoDB基础」的学习笔记">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="mongoDB M001课程学习笔记">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> mongoDB M001课程学习笔记</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>mongoDB官方课程 「MOO1 MongoDB基础」的学习笔记</p>
+<p><img src="/images/25/电子结业证书.png" alt="电子结业证书"></p>
+<a id="more"></a>
+<hr>
+<h1 id="mongoDB基础"><a href="#mongoDB基础" class="headerlink" title="mongoDB基础"></a>mongoDB基础</h1><h2 id="基础CRUD"><a href="#基础CRUD" class="headerlink" title="基础CRUD"></a>基础CRUD</h2><h3 id="Update"><a href="#Update" class="headerlink" title="Update"></a>Update</h3><ul>
+<li><p>insert</p>
+<ul>
+<li>_id是每条记录的必填字段，不一定是ObjectId类型。默认使用ObjectId类型以确保_id不重复</li>
+<li>db.name.insert({}) db.name.insert([{},{}])</li>
+<li><p>db.name.insert([{},{}], “ordered”:false)</p>
+<ul>
+<li>ordered=true 一条记录插入失败，后面的记录不会插入</li>
+<li>ordered=false 一条记录插入失败后，后面的插入操作还会继续</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>update</p>
+<ul>
+<li><p>db.Name.updateMany({“city”:”HUDSON”}, {“$inc”: {“pop”: 10}})</p>
+<ul>
+<li>$inc $set $push(string, number, boolean)</li>
+<li><p>$push</p>
+<ul>
+<li>array追加元素</li>
+<li>将字段转化为array</li>
+</ul>
+</li>
+<li><p>all operators:<a href="https://docs.mongodb.com/manual/reference/operator/update/#id1" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/operator/update/#id1</a></p>
+</li>
+</ul>
+</li>
+<li><p>db.Name.updateOne()</p>
+</li>
+</ul>
+</li>
+<li><p>delete</p>
+<ul>
+<li>db.Name.deleteOne() db.Name.deleteMany()</li>
+<li>db.name.drop() 删除collection</li>
+<li>删除一个database下的所有collection时，也会删掉database</li>
+</ul>
+</li>
+<li><p>upsert</p>
+<ul>
+<li>默认为false</li>
+<li>db.name.updateMany({“field”:value}, {“$set”:{“field2”:value2}}, {“upsert”:true})</li>
+</ul>
+</li>
+</ul>
+<h3 id="Find"><a href="#Find" class="headerlink" title="Find"></a>Find</h3><ul>
+<li>db.FindOne() db.FindOne({})</li>
+<li><p>comparison operators</p>
+<ul>
+<li>$eq $ne $gt $lt $gte $lte $regex</li>
+</ul>
+</li>
+<li><p>logic operators</p>
+<ul>
+<li>$and $or $nor $not</li>
+<li>$nor : fail to match both clauses 后面可以跟多个匹配条件 db.name.find({“$nor”:[{“field1:1”}, {“field2”:2}])</li>
+<li><p>$not : negate the query requirement 后面只跟一个匹配条件</p>
+<ul>
+<li>db.name.find({“field1”:{“$not”:{“eq”:”123”}}}) 正确</li>
+<li>db.name.find({“$not”:{“field1”:”123”}}) 错误</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>expression operators</p>
+<ul>
+<li><p>$expr</p>
+<ul>
+<li>作用：在同一个文档内做比较</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>projection</p>
+<ul>
+<li>指定返回的结果包含哪些字段，不包含哪些字段</li>
+<li>db.name.find({“field”:value}, {“filed2”:1})</li>
+<li>projection中只能使用全0或全1，除非想返回某些字段但不想返回_id</li>
+</ul>
+</li>
+<li><p>$elemMatch</p>
+<ul>
+<li>数组中元素匹配</li>
+</ul>
+</li>
+<li><p>dot notation</p>
+<ul>
+<li>db.name.find(“field1.field2”:value)</li>
+<li>db.name.find({“array1.0.field1”:value})</li>
+</ul>
+</li>
+<li><p>sort &amp; limit</p>
+<ul>
+<li><p>db.name.find().sort({“field”:1}).limit(1)</p>
+<ul>
+<li>sort({“pop”:1}) 升序</li>
+<li>sort({“pop”:-1}) 降序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>index</p>
+<ul>
+<li><p>createIndex{“field”:1}</p>
+<ul>
+<li>1表示升序，-1表示降序</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="import-export"><a href="#import-export" class="headerlink" title="import/export"></a>import/export</h3><ul>
+<li>mongodump<br>mongoexport<br>mongorestore<br>mongoimport </li>
+</ul>
+<h3 id="aggregation-framework"><a href="#aggregation-framework" class="headerlink" title="aggregation framework"></a>aggregation framework</h3><ul>
+<li><p>db.name.aggregate</p>
+<ul>
+<li>aggregate中的语句会顺序执行 pipeline</li>
+</ul>
+</li>
+<li><p>stages:$match $group $project</p>
+</li>
+</ul>
+<h2 id="concept"><a href="#concept" class="headerlink" title="concept"></a>concept</h2><h3 id><a href="#" class="headerlink" title="$"></a>$</h3><ul>
+<li>代表操作符</li>
+<li><p>代表取字段的值</p>
+<ul>
+<li>{“$expr”:{“$eq”[“$start station id”, “$end station id”]:}}</li>
+</ul>
+</li>
+</ul>
+<h3 id="syntax"><a href="#syntax" class="headerlink" title="syntax"></a>syntax</h3><ul>
+<li><p>MQL syntax</p>
+<ul>
+<li>{“field”:{operator:value}}</li>
+</ul>
+</li>
+<li><p>aggregation syntax</p>
+<ul>
+<li>{operator:{“field”:value}}</li>
+</ul>
+</li>
+</ul>
+<h3 id="cursor-method"><a href="#cursor-method" class="headerlink" title="cursor method"></a>cursor method</h3><ul>
+<li>pretty() count() sort() limit()</li>
+<li>cursor.limit().sort() means cursor.sort().limit()</li>
+<li>排序时，null值被认为是最小值</li>
+</ul>
+<h3 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h3><h3 id="concern"><a href="#concern" class="headerlink" title="concern"></a>concern</h3><ul>
+<li><p>write conern</p>
+<ul>
+<li>one(数据被写入1台server)</li>
+<li>majority</li>
+</ul>
+</li>
+<li><p>read concern</p>
+<ul>
+<li>local (default)</li>
+<li>majority</li>
+</ul>
+</li>
+<li><p>read preference(从哪里读)</p>
+<ul>
+<li>primary</li>
+<li>nearest</li>
+<li>certain node</li>
+</ul>
+</li>
+</ul>
+<h3 id="model-methodology"><a href="#model-methodology" class="headerlink" title="model methodology"></a>model methodology</h3><ul>
+<li><ol>
+<li>workload description 列出可能的查询，每个查询的速度要求</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>decide relationship: embedding/reference</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>schema design patterns 选择模型的设计模式</li>
+</ol>
+</li>
+</ul>
+<h3 id="validation"><a href="#validation" class="headerlink" title="validation"></a>validation</h3><ul>
+<li>子主题 1</li>
+</ul>
+<h2 id="atlas界面操作"><a href="#atlas界面操作" class="headerlink" title="atlas界面操作"></a>atlas界面操作</h2><h3 id="在文档中插入记录"><a href="#在文档中插入记录" class="headerlink" title="在文档中插入记录"></a>在文档中插入记录</h3><h2 id="其他备注"><a href="#其他备注" class="headerlink" title="其他备注"></a>其他备注</h2><h3 id="密码：m001-mongodb-basics"><a href="#密码：m001-mongodb-basics" class="headerlink" title="密码：m001-mongodb-basics"></a>密码：m001-mongodb-basics</h3><h2 id="cases"><a href="#cases" class="headerlink" title="cases"></a>cases</h2><h3 id="example1"><a href="#example1" class="headerlink" title="example1"></a>example1</h3><ul>
+<li></li>
+<li>{“amenities”:[“shampoo”]} 查找字段是array且只包含”shampoo”的记录</li>
+<li>{“amenities”:[“shampoo”, “wifi”]} 查找的结果与数组中元素的顺序有关</li>
+<li>{“amenities”:{“$all”:[“shampoo”, “wifi”]}} 查找字段是数组且至少包含shampoo和wifi的记录，不管元素的排序</li>
+<li>{“amenities”:{“$size”:20}} 指定数组的长度</li>
+</ul>
+<h3 id="example2"><a href="#example2" class="headerlink" title="example2"></a>example2</h3><ul>
+<li>db.name.aggregate([{“$match”:{}, “$group”:{“_id”:”$address.country”, “total”:{“$sum”:1}}}])</li>
+<li>db.name.aggregate([{“$match”:{}, “$group”:{“_id”:”$address.country”, “total”:{“$sum”:”$price”}}}])</li>
+</ul>
+<p><em>XMind - Trial Version</em></p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2021/05/11/26. [阅读笔记]《领域驱动设计》第三章：绑定模型和实现/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2021/04/29/23.浅谈「领域事件」/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "mongoDB M001课程学习笔记",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2021-05-09 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/知识总结/">知识总结<span>4</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/mongoDB/">mongoDB<span>1</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>MIT6.828 Homework3 笔记 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="MIT6.828 Homework3: System Call
+了解xv6系统调用的过程与原理，添加一条显示时间的系统调用">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="MIT6.828 Homework3 笔记">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> MIT6.828 Homework3 笔记</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>MIT6.828 Homework3: System Call</p>
+<p>了解xv6系统调用的过程与原理，添加一条显示时间的系统调用<br><a id="more"></a></p>
+<hr>
+<hr>
+<h2 id="Syscall过程分析"><a href="#Syscall过程分析" class="headerlink" title="Syscall过程分析"></a>Syscall过程分析</h2><p>以 write 系统调用为例，一个用户程序调用 write函数的c库，在xv6中的执行流程如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">=================================================================== </span><br><span class="line">       |int write(int, const void*, int)  (user.h)</span><br><span class="line">       |      || </span><br><span class="line"> user  |      \/ </span><br><span class="line">       |  SYSCALL(write)  (usys.S)</span><br><span class="line">space  |      ||  int 0x40</span><br><span class="line">       |      \/</span><br><span class="line">-------| vector entry for write  (vectors.S, generated after make)</span><br><span class="line">       |      ||  jmp</span><br><span class="line">       |      \/</span><br><span class="line">kernel | alltraps  (trapasm.S)</span><br><span class="line">       |      ||  jmp</span><br><span class="line">space  |      \/</span><br><span class="line">       | void trap(struct trapframe *tf)  (trap.c)</span><br><span class="line">       |      ||  call</span><br><span class="line">       |      \/</span><br><span class="line">       | void syscall()  (syscall.c)</span><br><span class="line">       |      ||  call</span><br><span class="line">       |      \/</span><br><span class="line">       | int syswrite(void)  (sysfile.c)</span><br><span class="line">       |      ||</span><br><span class="line">       |      \/   </span><br><span class="line">       |  (some detailed logic ...)</span><br><span class="line">===================================================================</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li><p>某个用户函数调用 write 函数，这里的 write 是c库中定义的函数，不是真正的系统调用，它的功能是将cpu执行流引入内核，执行真正的 write 系统调用相应的指令</p>
+</li>
+<li><p>int write(int, const void*, int) 比较特殊，它定义了函数接口后，并没有用c语言写出具体函数，而是在 usys.S 中用汇编语言定义了函数。链接器可以通过 usys.S 中提供的函数符号定位到函数指令的位置。在 user.h 中定义的函数接口使得编译器可以编译出三条压栈的指令。</p>
+</li>
+<li><p>write函数内部将系统调用号放在 eax 中后，调用 int 0x40 进入内核，开始执行系统调用。int 0x40 的作用包括:</p>
+<blockquote>
+<ol>
+<li>保存用户态的进程现场到trap frame中</li>
+<li>切换当前的上下文至kernel</li>
+</ol>
+</blockquote>
+</li>
+<li><p>从vector跳转到alltrap后，进行现场保护，然后调用 trap()</p>
+</li>
+<li><p>trap() 会根据中断的类型，判断此时进入中断是为了进行系统调用，然后执行 syscall()</p>
+</li>
+<li><p>syscall() 会根据eax 中的系统调用号，在函数指针数组中找到对应的函数，然后执行。syscall.c 中提供了 argint, argstr, argptr 函数，用与获取用户态传入的参数。</p>
+</li>
+</ol>
+<h2 id="Part-One-System-call-tracing"><a href="#Part-One-System-call-tracing" class="headerlink" title="Part One: System call tracing"></a>Part One: System call tracing</h2><p>在 syscall.c 中 加入一个系统调用名的字符串表</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *syscallNames[] = &#123;</span><br><span class="line">[SYS_fork]    <span class="string">"fork"</span>,</span><br><span class="line">[SYS_exit]    <span class="string">"exit"</span>,</span><br><span class="line">[SYS_wait]    <span class="string">"wait"</span>,</span><br><span class="line">[SYS_pipe]    <span class="string">"pipe"</span>,</span><br><span class="line">[SYS_read]    <span class="string">"read"</span>,</span><br><span class="line">[SYS_kill]    <span class="string">"kill"</span>,</span><br><span class="line">[SYS_exec]    <span class="string">"exec"</span>,</span><br><span class="line">[SYS_fstat]   <span class="string">"fstat"</span>,</span><br><span class="line">[SYS_chdir]   <span class="string">"chdir"</span>,</span><br><span class="line">[SYS_dup]     <span class="string">"dup"</span>,</span><br><span class="line">[SYS_getpid]  <span class="string">"getpid"</span>,</span><br><span class="line">[SYS_sbrk]    <span class="string">"sbrk"</span>,</span><br><span class="line">[SYS_sleep]   <span class="string">"sleep"</span>,</span><br><span class="line">[SYS_uptime]  <span class="string">"uptime"</span>,</span><br><span class="line">[SYS_open]    <span class="string">"open"</span>,</span><br><span class="line">[SYS_write]   <span class="string">"write"</span>,</span><br><span class="line">[SYS_mknod]   <span class="string">"mknod"</span>,</span><br><span class="line">[SYS_unlink]  <span class="string">"unlink"</span>,</span><br><span class="line">[SYS_link]    <span class="string">"link"</span>,</span><br><span class="line">[SYS_mkdir]   <span class="string">"mkdir"</span>,</span><br><span class="line">[SYS_close]   <span class="string">"close"</span>,</span><br><span class="line">[SYS_date]    <span class="string">"date"</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>修改 syscall():</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">syscall(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> num;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">proc</span> *<span class="title">curproc</span> = <span class="title">myproc</span>();</span></span><br><span class="line"></span><br><span class="line">  num = curproc-&gt;tf-&gt;eax;</span><br><span class="line">  <span class="keyword">if</span>(num &gt; <span class="number">0</span> &amp;&amp; num &lt; NELEM(syscalls) &amp;&amp; syscalls[num]) &#123;</span><br><span class="line">    curproc-&gt;tf-&gt;eax = syscalls[num]();</span><br><span class="line">    <span class="comment">///新加入的代码</span></span><br><span class="line">    cprintf(<span class="string">"%s-&gt;%d\n"</span>, syscallNames[num], curproc-&gt;tf-&gt;eax);</span><br><span class="line">    <span class="comment">///</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    cprintf(<span class="string">"%d %s: unknown sys call %d\n"</span>,</span><br><span class="line">            curproc-&gt;pid, curproc-&gt;name, num);</span><br><span class="line">    curproc-&gt;tf-&gt;eax = <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完成效果如下：</p>
+<p><img src="/images/11/hw3-1.png" alt></p>
+<p>challenge中的问题，个人想到的办法是：因为系统调用传入的参数固定，所以分情况，依据 esp 打印出相应个数的参数。没有想到太好的，可以根据栈推算出参数个数的方法。</p>
+<h2 id="Part-Two-Date-system-call"><a href="#Part-Two-Date-system-call" class="headerlink" title="Part Two: Date system call"></a>Part Two: Date system call</h2><p><strong>在 syscall.h 中</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYS_date   22</span></span><br></pre></td></tr></table></figure></p>
+<p><strong>在 syscall.c 中的相应位置</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">///...</span></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">sys_date</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"><span class="comment">///...</span></span><br><span class="line">[SYS_date]    <span class="string">"date"</span></span><br></pre></td></tr></table></figure>
+<p><strong>在 sysproc.c 中</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sys_date</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">rtcdate</span> *<span class="title">r</span>;</span></span><br><span class="line">  <span class="keyword">if</span>(argptr(<span class="number">0</span>, (<span class="keyword">char</span>**)&amp;r, <span class="number">4</span>) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  cmostime(r);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>新建一个用户态执行的程序 date.c</strong><br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"types.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"user.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"date.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">rtcdate</span> <span class="title">r</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!date(&amp;r)) &#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"date failed\n"</span>);</span><br><span class="line">    <span class="built_in">exit</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// your code to print the time in any format you like...</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"%d.%d.%d %d:%d:%d\n"</span>, r.year, r.month, r.day, r.hour, r.minute, r.second);</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在 Makefile 的 UPROGS 下加入 _date</p>
+<p>编译运行</p>
+<p>完成效果如下图：</p>
+<p><img src="/images/11/hw3-2.png" alt></p>
+<p>时间可能是有时区换算的，显示的时间与本地时间有差异</p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/10/27/13.【笔记】VimBookCH7/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/10/14/10.MIT6.828-hw2-shell/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "MIT6.828 Homework3 笔记",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-10-15 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/操作系统/">操作系统<span>8</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/MIT6-828/">MIT6.828<span>8</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Syscall过程分析"><span class="toc-article-text">Syscall过程分析</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Part-One-System-call-tracing"><span class="toc-article-text">Part One: System call tracing</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#Part-Two-Date-system-call"><span class="toc-article-text">Part Two: Date system call</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

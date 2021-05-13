@@ -1,0 +1,344 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>代码格式整理工具——clang-format简介 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="最近教研室有好多陈旧的代码要整理，借此介绍一款简单易用的代码格式规范工具。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="代码格式整理工具——clang-format简介">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 代码格式整理工具——clang-format简介</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>最近教研室有好多陈旧的代码要整理，借此介绍一款简单易用的代码格式规范工具。</p>
+<p><img src="/images/3/clang-format.png" alt></p>
+<a id="more"></a>
+<hr>
+<h3 id="clang-format-功能简介"><a href="#clang-format-功能简介" class="headerlink" title="clang-format 功能简介"></a>clang-format 功能简介</h3><p>clang-format是一款用于<strong>整理代码格式</strong>的自动化工具。主要适用的情况有：</p>
+<ul>
+<li>团队共同开发代码，不同人的代码习惯不同，难以统一，需要以一种简单可行的工具对代码格式进行统一</li>
+<li>手上的代码格式比较混乱，需要一种快速的方式规范代码格式，增强程序可读性</li>
+</ul>
+<p>遇到以上情况可以使用clang-format，快速高效地改进代码格式</p>
+<h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><p>Ubuntu下clang-format的安装<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install clang-format</span><br></pre></td></tr></table></figure></p>
+<p>clang-format本身支持Google, Chromium, LLVM, Mozilla, WebKit等代码规范，例如我们要将代码按照<a href="https://zh-google-styleguide.readthedocs.io/en/latest/" target="_blank" rel="noopener">Google编程规范</a>，将main.cc进行整理，语句是：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang-format -style=Google main.cc</span><br></pre></td></tr></table></figure>
+<p>整理后的代码会被输出到stdout，如果需要输入到另一个文件，可以使用重定向:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang-format -style=Google main.cc &gt; main2.cc</span><br></pre></td></tr></table></figure></p>
+<p>也可以用整理过后的代码直接直接替代原代码<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang-format -style=Google -i main.cc</span><br></pre></td></tr></table></figure></p>
+<p>更多的用法可以参考clang-format手册</p>
+<h3 id="自定义格式"><a href="#自定义格式" class="headerlink" title="自定义格式"></a>自定义格式</h3><p>有时现成的代码格式不满足我们的格式要求（比如我们希望代码中的缩进是4个空格，但是谷歌编程规范中的缩进是2个空格），此时我们可以生成自定以的格式文件。</p>
+<p>首先输出已有的编程规范的格式文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang-format -style=Google -dump-config &gt; .clang-format</span><br></pre></td></tr></table></figure></p>
+<p>输出的文件名必须命名为.clang-format才可以被clang-format识别，将.clang-format置于源码的目录或父目录中，执行下面的命令使用自定义格式文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang-format -style=file main.cc &gt; main1.cc</span><br></pre></td></tr></table></figure></p>
+<p>.clang-format中的每一项在<a href="http://clang.llvm.org/docs/ClangFormatStyleOptions.html" target="_blank" rel="noopener">clang-format style 官方文档</a>都有具体的说明，大多数说的比较清楚，还有具体例子。不过几个Penalty开头的选项讲得比较含糊，也没有举例子</p>
+<blockquote>
+<ul>
+<li>PenaltyBreakAssignment (unsigned): <em>The penalty for breaking around an assignment operator</em>.</li>
+<li>PenaltyBreakBeforeFirstCallParameter (unsigned): <em>The penalty for breaking a function call after call(</em>.</li>
+<li>PenaltyBreakComment (unsigned): <em>The penalty for each line break introduced inside a comment</em>.</li>
+<li>PenaltyBreakFirstLessLess (unsigned): <em>The penalty for breaking before the first &lt;&lt;</em>.</li>
+<li>PenaltyBreakString (unsigned): <em>The penalty for each line break introduced inside a string literal</em>.</li>
+<li>PenaltyBreakTemplateDeclaration (unsigned): <em>The penalty for breaking after template declaration</em>.</li>
+<li>PenaltyExcessCharacter (unsigned): <em>The penalty for each character outside of the column limit</em>.</li>
+<li>PenaltyReturnTypeOnItsOwnLine (unsigned): <em>Penalty for putting the return type of a function onto its own line</em>.</li>
+</ul>
+</blockquote>
+<p>这里的Penalty可以理解为“代价”， “代价”的数值越大，则越不倾向于做某事。例如PenaltyBreakAssignment可以理解为“在赋值后换行的代价”。有时一行的长度超过了ColumnLimit的长度，但是换行可能会影响观感，此时就会比较相对应的“代价因子”，判断是否要换行。举个例子说明一下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// PenaltyBreakString = 0, ColumnLimit = 80</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">string</span> stringVar = <span class="string">"VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVe"</span></span><br><span class="line">                        <span class="string">"ryVeryLongString"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// PenaltyBreakString = 10000, ColumnLimit = 80</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">string</span> stringVar =</span><br><span class="line">    <span class="string">"VeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryVeryLongString"</span>;</span><br></pre></td></tr></table></figure>
+<p>字符串所在行的长度超过了ColumnLimit 80，此时可以在字符串中间折断换行，也可以将整个字符串挪到下一行。</p>
+<p>当 PenaltyBreakString=0 时，字符串中间引入每个换行符的代价小，因此可以中断并引入下一行；当 PenaltyBreakString=10000 时，字符串中间引入每个换行符的代价大，因此clang-format选择将整个字符串挪到下一行，不在字符串中间折断换行。</p>
+<p><strong>需要注意的是</strong>，代价因子只作一种<strong>定性</strong>的判断依据，无法通过“代价因子”的数值直接计算得出换行与否。</p>
+<h3 id="其他使用"><a href="#其他使用" class="headerlink" title="其他使用"></a>其他使用</h3><p>clang-format也可以作为vim，vscode等编辑器的插件使用，具体使用可以参考<a href="http://clang.llvm.org/docs/ClangFormat.html" target="_blank" rel="noopener">官方文档</a></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="http://clang.llvm.org/docs/ClangFormatStyleOptions.html" target="_blank" rel="noopener">clang-format style 官方文档</a></p>
+<p><a href="https://stackoverflow.com/questions/26635370/in-clang-format-what-do-the-penalties-do" target="_blank" rel="noopener">StackOverflow关于Penalty的相关说明</a></p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/06/18/4.Linux时间相关函数总结/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/05/21/2.2019华为网络精英挑战赛总结/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "代码格式整理工具——clang-format简介",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-05-29 
+	</div>
+	
+
+	<!-- categories -->
+    
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/工具/">工具<span>1</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

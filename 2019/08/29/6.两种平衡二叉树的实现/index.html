@@ -1,0 +1,359 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>平衡二叉树的两种实现方式 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="实现一个节点值为int型的简单平衡树，支持插入与删除操作。我用了两种方式进行了实现。
+在本文中讲解了平衡二叉树维持平衡的操作，并简单分析了性能。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="平衡二叉树的两种实现方式">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 平衡二叉树的两种实现方式</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>实现一个节点值为int型的简单平衡树，支持插入与删除操作。我用了两种方式进行了实现。</p>
+<p>在本文中讲解了平衡二叉树维持平衡的操作，并简单分析了性能。</p>
+<a id="more"></a>
+<hr>
+<h2 id="完整代码地址："><a href="#完整代码地址：" class="headerlink" title="完整代码地址："></a>完整代码地址：</h2><p>方法一： <a href="https://github.com/MingyeGao/dataStructure/tree/master/tree/AVLTree1" target="_blank" rel="noopener">https://github.com/MingyeGao/dataStructure/tree/master/tree/AVLTree1</a></p>
+<p>方法二： <a href="https://github.com/MingyeGao/dataStructure/tree/master/tree/AVLTree2" target="_blank" rel="noopener">https://github.com/MingyeGao/dataStructure/tree/master/tree/AVLTree2</a></p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>树中每个节点的左右子树高度差不超过1的二叉搜索树，叫做平衡二叉树。</p>
+<h2 id="思路简介"><a href="#思路简介" class="headerlink" title="思路简介"></a>思路简介</h2><p>为了维持二叉树的平衡性，节点要引入额外的变量。</p>
+<p>方法一引入了一个平衡因子，记录每个节点左子树的高度减去右子树高度的值，当平衡因子的绝对值超过2时进行调整操作。</p>
+<p>方法二记录每个节点的高度，若一个节点的左右子树高度差超过2，则进行平衡操作。</p>
+<p><strong>插入操作</strong>：通过比较插入值与当前节点值的大小，不断向叶子节点移动，直至遇到空节点再插入。进行平衡处理。</p>
+<p><strong>删除操作</strong>：通过比较插入值与当前节点值的大小，不断向叶子节点移动。找到待删除的点后，用该节点 子节点中的 后继代替它，然后进行平衡处理。</p>
+<p>找后继分为4种情况：</p>
+<p>1）后继是nullptr，说明待删除节点是叶子节点，无孩子节点。直接将待删除节点替换为空指针，然后调整。</p>
+<p>2）后继是左儿子，说明待删除节点无右儿子。直接将待删除节点替换为左儿子，然后从替换后的节点开始调整。</p>
+<p>3）后继是右儿子，说明待删除节点的右儿子无左儿子。右儿子的右儿子不变，左儿子变为待删除节点的左儿子，将待删除节点替换为右儿子。从替换后的节点开始调整。</p>
+<p>4）后继不是左儿子也不是右儿子。首先用后继的右儿子代替后继，然后用后继代替待删除节点。从目前后继的右儿子所在的位置开始调整。</p>
+<h2 id="基本操作图解"><a href="#基本操作图解" class="headerlink" title="基本操作图解"></a>基本操作图解</h2><h3 id="一、左旋"><a href="#一、左旋" class="headerlink" title="一、左旋"></a>一、左旋</h3><p><img src="/images/6/左旋.jpg" alt></p>
+<h3 id="二、右旋"><a href="#二、右旋" class="headerlink" title="二、右旋"></a>二、右旋</h3><p><img src="/images/6/右旋.jpg" alt></p>
+<h3 id="三、左平衡"><a href="#三、左平衡" class="headerlink" title="三、左平衡"></a>三、左平衡</h3><p>左平衡分两种情况</p>
+<p>情况一：如下图所示，R节点的右子树高度大于等于左子树高度</p>
+<p><em>注意：图中只展示了R节点右子树高度大于左子树高度的情况</em></p>
+<p><em>R节点 右子树高度 等于 左子树高度 的情况在插入时不会出现，在删除时会出现</em><br><img src="/images/6/左平衡情况一.jpg" alt></p>
+<p>情况二：如下图所示，R节点右子树高度小于左子树高度</p>
+<p>需要经过两次旋转操作</p>
+<p><img src="/images/6/左平衡情况二.jpg" alt></p>
+<h3 id="四、右平衡"><a href="#四、右平衡" class="headerlink" title="四、右平衡"></a>四、右平衡</h3><p>与左平衡类似，右平衡也分两种情况</p>
+<p>情况一：如下图所示，L节点的左子树高度大于等于右子树高度</p>
+<p><em>注意：图中只展示了L节点左子树高度大于右子树高度的情况</em></p>
+<p><em>R节点 左子树高度 等于 右子树高度 的情况在插入时不会出现，在删除时会出现</em><br><img src="/images/6/右平衡情况一.jpg" alt></p>
+<p>情况二：如下图所示，L节点左子树高度小于右子树高度</p>
+<p>需要经过两次旋转操作<br><img src="/images/6/右平衡情况二.jpg" alt></p>
+<h2 id="性能分析"><a href="#性能分析" class="headerlink" title="性能分析"></a>性能分析</h2><p>插入性能分析：</p>
+<p>每次插入造成失衡后，调整一次，N节点的高度不会改变，N节点之外的平衡性可以保证，所以插入只需要 O(1) 的时间复杂度。</p>
+<p>删除性能分析：</p>
+<p>最差性能 O(logN)，下图构造一种可能的最差平衡情况<br><img src="/images/6/最差平衡情况.jpg" alt></p>
+<p>假设我们要删除的节点是n</p>
+<p>目前N1的左子树高度为(h + 1)，右子树高度为(h + 2)，以N1为根节点的子树高度为(h + 3)</p>
+<p>删除n后，以N1为根节点的子树做左平衡操作，高度变为(h + 2)，比原子树高度下降1</p>
+<p>那么以N2为根节点的子树就会失衡，需要进行平衡操作。</p>
+<p>如果平衡操作过后子树高度降低，同时N2的父节点的右子树高度比N2子树高2，那么又需要进行平衡操作。</p>
+<p>平衡操作可能会延伸至根节点才会停止。</p>
+<p>这种最坏的情况，删除节点的时间复杂度是 O(logN)</p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/08/31/7.C++实现一个简单的红黑树/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/08/27/5.左程云《程序员代码面试指南题解》/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "平衡二叉树的两种实现方式",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-08-29 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/数据结构/">数据结构<span>2</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/c/">c++<span>5</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

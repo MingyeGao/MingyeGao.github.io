@@ -1,0 +1,367 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>MIT6.828 Homework1 笔记 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="MIT6.828 Homework1: Boot xv6
+xv6是6.828课程中我们要学习和模仿的内核。
+本作业的任务是完成xv6的启动，回答xv6启动中的一些相关问题。
+另有部分的思考附在最后。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="MIT6.828 Homework1 笔记">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> MIT6.828 Homework1 笔记</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>MIT6.828 Homework1: Boot xv6</p>
+<p>xv6是6.828课程中我们要学习和模仿的内核。</p>
+<p>本作业的任务是完成xv6的启动，回答xv6启动中的一些相关问题。</p>
+<p>另有部分的思考附在最后。<br><a id="more"></a></p>
+<hr>
+<hr>
+<h2 id="1-Boot-xv6"><a href="#1-Boot-xv6" class="headerlink" title="1.Boot xv6"></a><strong>1.Boot xv6</strong></h2><p>clone xv6的源码到本地，进入目录后make即可。</p>
+<p>跟随教程安装qemu后，在目录内打开终端，输入 make qemu 即可启动内核。</p>
+<p>启动内核后停留在shell。</p>
+<h2 id="2-Finding-and-breaking-at-an-address"><a href="#2-Finding-and-breaking-at-an-address" class="headerlink" title="2.Finding and breaking at an address"></a><strong>2.Finding and breaking at an address</strong></h2><p>在xv6源码目录下打开一个shell，输入:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make qemu-gdb</span><br></pre></td></tr></table></figure></p>
+<p>在同目录下另起一个窗口，输入:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make gdb</span><br></pre></td></tr></table></figure></p>
+<p>可能出现以下字段：<br><img src="/images/9/1.gdb-problem.png" alt="1.gdb config problem"></p>
+<p>按照指示进行配置，首先进入上图指示的目录，在我的机器上是 /home/server ，应该就是环境变量 $HOME 指示的位置。</p>
+<p>打开终端，输入：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch .gdbinit</span><br></pre></td></tr></table></figure></p>
+<p>在.gdbinit中加入两行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">add-auto-load-safe-path /home/server/7.828/xv6-public/.gdbinit</span><br><span class="line">set auto-load safe-path /</span><br></pre></td></tr></table></figure></p>
+<p>重启xv6，即可达到与教程相同的效果</p>
+<h2 id="3-Exercise-What-is-on-the-stack"><a href="#3-Exercise-What-is-on-the-stack" class="headerlink" title="3.Exercise: What is on the stack?"></a><strong>3.Exercise: What is on the stack?</strong></h2><p>在0x1000c处打上断点，观察寄存器信息与esp地址处的信息：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info reg</span><br><span class="line">eax            0x0	0</span><br><span class="line">ecx            0x0	0</span><br><span class="line">edx            0x1f0	496</span><br><span class="line">ebx            0x10074	65652</span><br><span class="line">esp            0x7bdc	0x7bdc</span><br><span class="line">ebp            0x7bf8	0x7bf8</span><br><span class="line">esi            0x10074	65652</span><br><span class="line">edi            0x0	0</span><br><span class="line">eip            0x10000c	0x10000c</span><br><span class="line">eflags         0x46	[ PF ZF ]</span><br><span class="line">cs             0x8	8</span><br><span class="line">ss             0x10	16</span><br><span class="line">ds             0x10	16</span><br><span class="line">es             0x10	16</span><br><span class="line">fs             0x0	0</span><br><span class="line">gs             0x0	0</span><br><span class="line">(gdb) x/24x $esp</span><br><span class="line">0x7bdc:	0x00007db4	0x00000000	0x00000000	0x00000000</span><br><span class="line">0x7bec:	0x00000000	0x00000000	0x00000000	0x00000000</span><br><span class="line">0x7bfc:	0x00007c4d	0x8ec031fa	0x8ec08ed8	0xa864e4d0</span><br><span class="line">0x7c0c:	0xb0fa7502	0xe464e6d1	0x7502a864	0xe6dfb0fa</span><br><span class="line">0x7c1c:	0x16010f60	0x200f7c78	0xc88366c0	0xc0220f01</span><br><span class="line">0x7c2c:	0x087c31ea	0x10b86600	0x8ed88e00	0x66d08ec0</span><br></pre></td></tr></table></figure></p>
+<p><br>　　<em>Q：简述栈上非０数据；指出栈的范围</em><br><br>　　A：ebp寄存器指示栈底位置，栈的生长方向是从高地址到低地址。所以栈的范围应该是 0x7bdc(栈顶)~0x7b8f(栈底)。<br><br>　　栈上有数据0x7db4，这是函数执行完后需要返回的地址。当前函数是内核函数，只有内核运行出现致命错误时才返回，返回后执行流交给boot。从 bootblock.asm 也可证实 0x7db4 是内核函数出错后的返回地址，如下图所示：</p>
+<p><img src="/images/9/2.kernel-return-address.png" alt="2"></p>
+<blockquote>
+<p><em>图2：0x7bd4是 call 0x10018后的返回地址</em></p>
+</blockquote>
+<p><br>　　<em>Q：bootasm.s 中，栈指针是在哪里被初始化的？</em><br><br>　　A：如下面所示，esp的初始化在各段寄存器被初始化之后，在c语言编写的 bootmain 被调用之前。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">start32:</span><br><span class="line">  # Set up the protected-mode data segment registers</span><br><span class="line">  movw    $(SEG_KDATA&lt;&lt;3), %ax    # Our data segment selector</span><br><span class="line">  movw    %ax, %ds                # -&gt; DS: Data Segment</span><br><span class="line">  movw    %ax, %es                # -&gt; ES: Extra Segment</span><br><span class="line">  movw    %ax, %ss                # -&gt; SS: Stack Segment</span><br><span class="line">  movw    $0, %ax                 # Zero segments not ready for use</span><br><span class="line">  movw    %ax, %fs                # -&gt; FS</span><br><span class="line">  movw    %ax, %gs                # -&gt; GS</span><br><span class="line"></span><br><span class="line">  # Set up the stack pointer and call into C.</span><br><span class="line">  movl    $start, %esp</span><br><span class="line">  call    bootmain</span><br></pre></td></tr></table></figure></p>
+<p><br>　　<em>Q：单步跟踪 bootmain，栈上有什么？ bootmain 的第一条指令做了什么？</em><br><br>　　A：在调用指令 call bootmain 之前，esp被初始化到 0x7c00 的位置，这个位置也是 boot 程序最开始的地址。此地址往上储存了boot指令，往下作为栈空间生长，正好可以不影响boot指令存储的地址。</p>
+<p><br>　　以下是　call bootmain 指令执行前，esp地址往高地址方向储存的数据，与 bootblock.asm 中的内容正好可以对应。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">=&gt; 0x7c48:	call   0x7d3b</span><br><span class="line"></span><br><span class="line">Thread 1 hit Breakpoint 1, 0x00007c48 in ?? ()</span><br><span class="line">(gdb) x /24xw $esp</span><br><span class="line">0x7c00:	0x8ec031fa	0x8ec08ed8	0xa864e4d0	0xb0fa7502</span><br><span class="line">0x7c10:	0xe464e6d1	0x7502a864	0xe6dfb0fa	0x16010f60</span><br><span class="line">0x7c20:	0x200f7c78	0xc88366c0	0xc0220f01	0x087c31ea</span><br><span class="line">0x7c30:	0x10b86600	0x8ed88e00	0x66d08ec0	0x8e0000b8</span><br><span class="line">0x7c40:	0xbce88ee0	0x00007c00	0x0000eee8	0x00b86600</span><br><span class="line">0x7c50:	0xc289668a	0xb866ef66	0xef668ae0	0x9066feeb</span><br></pre></td></tr></table></figure></p>
+<p><br>　　call 0x7d3b 执行:</p>
+<ul>
+<li>esp的值减8</li>
+<li>将eip的值压入esp指示的位置</li>
+<li>将eip赋值为 0x7d3b</li>
+</ul>
+<p><br>　　如下方代码所示，后续分别向栈内压入了ebp, edi, esi, ebx,其中ebp的值是0，给调试时提供信息：这是第一个函数栈，无法再向前追溯。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">(gdb) si</span><br><span class="line">=&gt; 0x7d3b:	push   %ebp</span><br><span class="line">0x00007d3b in ?? ()</span><br><span class="line">(gdb) </span><br><span class="line">=&gt; 0x7d3c:	mov    %esp,%ebp</span><br><span class="line">0x00007d3c in ?? ()</span><br><span class="line">(gdb) </span><br><span class="line">=&gt; 0x7d3e:	push   %edi</span><br><span class="line">0x00007d3e in ?? ()</span><br><span class="line">(gdb) </span><br><span class="line">=&gt; 0x7d3f:	push   %esi</span><br><span class="line">0x00007d3f in ?? ()</span><br><span class="line">(gdb) </span><br><span class="line">=&gt; 0x7d40:	push   %ebx</span><br><span class="line">0x00007d40 in ?? ()</span><br><span class="line">(gdb) </span><br><span class="line">=&gt; 0x7d41:	sub    $0xc,%esp</span><br><span class="line">0x00007d41 in ?? ()</span><br><span class="line">(gdb) x /21xw $esp</span><br><span class="line">0x7bec:	0x00000000	0x00000000	0x00000000	0x00000000</span><br><span class="line">0x7bfc:	0x00007c4d	0x8ec031fa	0x8ec08ed8	0xa864e4d0</span><br><span class="line">0x7c0c:	0xb0fa7502	0xe464e6d1	0x7502a864	0xe6dfb0fa</span><br><span class="line">0x7c1c:	0x16010f60	0x200f7c78	0xc88366c0	0xc0220f01</span><br><span class="line">0x7c2c:	0x087c31ea	0x10b86600	0x8ed88e00	0x66d08ec0</span><br><span class="line">0x7c3c:	0x8e0000b8</span><br></pre></td></tr></table></figure>
+<hr>
+<p><br>　　<em>Q：找到将 eip 赋值为 0x10000c 的指令，这条 call 指令做了什么？</em><br><br>　　A： 这条指令是 call *0x10018，call 的参数前面加了一个星号, 转到的地址是内存地址 0x10018下的值，即 0x10000c。<br><br>　　这条指令的作用是在加载内核映像后，执行内核指令。</p>
+<h2 id="4-Others"><a href="#4-Others" class="headerlink" title="4.Others"></a><strong>4.Others</strong></h2><p><strong>开启分页后的一些细节问题思考</strong></p>
+<p><br>　　<strong>1. 开启分页后，引入段页式内存管理的过程，在JOS实现中指令的顺序是什么样的？</strong></p>
+<blockquote>
+<ol>
+<li>修改 CR0 寄存器的末位，将CPU从实模式转换为保护模式</li>
+<li>通过一条 ljmp 指令，将 cs 寄存器赋值为8，eip寄存器赋值为 $start32</li>
+<li>对除cs外的各段寄存器进行初始化。</li>
+<li>开始实现函数栈，转到内核执行。</li>
+</ol>
+</blockquote>
+<p><br>　　<strong>2. 开启分页后引入了分段内存管理，为什么修改 CR0 寄存器后紧接着的一条指令正好是未开启分页状态下的下一条指令地址呢？</strong></p>
+<blockquote>
+<p>boot loader为初始的程序单独设置了一个分段表，保证经过分段映射后的物理地址跟不开启分段时的物理地址是一样的。</p>
+</blockquote>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/10/14/10.MIT6.828-hw2-shell/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/10/11/8.MIT6.828-lab1/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "MIT6.828 Homework1 笔记",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-10-11 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/操作系统/">操作系统<span>8</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/MIT6-828/">MIT6.828<span>8</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Redis底层协议原理与实践 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="Redis使用RESP（REdis Serialization Protocol）协议，进行客户端与服务端的通信。
+RESP是一种实现简单，处理速度快，易于阅读的协议。
+了解RESP便于理解redis客户端的实现原理，也可以抓包对redis通信进行分析。
+本文简单介绍RESP协议，并给出相应实践。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Redis底层协议原理与实践">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> Redis底层协议原理与实践</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>Redis使用RESP（REdis Serialization Protocol）协议，进行客户端与服务端的通信。</p>
+<p>RESP是一种实现简单，处理速度快，易于阅读的协议。</p>
+<p>了解RESP便于理解redis客户端的实现原理，也可以抓包对redis通信进行分析。</p>
+<p>本文简单介绍RESP协议，并给出相应实践。<br><a id="more"></a></p>
+<h2 id="实践环境"><a href="#实践环境" class="headerlink" title="实践环境"></a>实践环境</h2><p>Ubuntu18.04</p>
+<p>Redis6.0.5</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>redis对于将传输的数据分为五种类型:Simple Strings，Errors，Integers，Bulk Strings和Arrays。</p>
+<p>不同的数据类型有不同的表示方法。redis文档中规定了每一条命令传递的数据类型。</p>
+<h3 id="Simple-String"><a href="#Simple-String" class="headerlink" title="Simple String"></a>Simple String</h3><p>Simple String用来传递简单的字符串，第一个字符是+号。</p>
+<h3 id="Bulk-String"><a href="#Bulk-String" class="headerlink" title="Bulk String"></a>Bulk String</h3><p>Bulk String用来表示二进制安全的字符串。最大可以表示512MB大小。Bulk String由三部分组成:</p>
+<ul>
+<li>以$开头,加上字符串的长度，加上CRLF</li>
+<li>实际字符串</li>
+<li>以CRLF结束</li>
+</ul>
+<p>例如，”foobar”用bulk stirng传输，要写成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$6\r\nfoobar\r\n</span><br></pre></td></tr></table></figure></p>
+<p>长度为零的Bulk string写作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$0\r\n\r\n</span><br></pre></td></tr></table></figure></p>
+<p>不存在的null Bulk String写作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$-1\r\n</span><br></pre></td></tr></table></figure></p>
+<h3 id="Integer"><a href="#Integer" class="headerlink" title="Integer"></a>Integer</h3><p>Integer用于表示数字，以:开头，例如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:1000\r\n</span><br></pre></td></tr></table></figure></p>
+<h3 id="Error"><a href="#Error" class="headerlink" title="Error"></a>Error</h3><p>Error与Simple String类似，以-开头，单独列出来是为了方便客户端处理。</p>
+<h3 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h3><p>Arrays以$开头，后紧跟Array中元素的个数。</p>
+<p>以CRLF分隔后，后面是每一个元素的具体表示。</p>
+<p>例如，[foo, bar]表示为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n</span><br></pre></td></tr></table></figure></p>
+<p>空Array表示为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*0\r\n</span><br></pre></td></tr></table></figure></p>
+<p>Array可以嵌套，[[1,2,3],[foo,bar]]可以表示为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">*2\r\n</span><br><span class="line">*3\r\n</span><br><span class="line">:1\r\n</span><br><span class="line">:2\r\n</span><br><span class="line">:3\r\n</span><br><span class="line">*2\r\n</span><br><span class="line">+Foo\r\n</span><br><span class="line">-Bar\r\n</span><br></pre></td></tr></table></figure></p>
+<p>不存在的数组表示为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*-1\r\n</span><br></pre></td></tr></table></figure></p>
+<h2 id="通信实践"><a href="#通信实践" class="headerlink" title="通信实践"></a>通信实践</h2><p>Redis的客户端与服务器通信主要分以下三种情况：</p>
+<ul>
+<li>单指令通信</li>
+<li>订阅/发布模式</li>
+<li>pipeline通信</li>
+</ul>
+<h3 id="单指令通信"><a href="#单指令通信" class="headerlink" title="单指令通信"></a>单指令通信</h3><blockquote>
+<p>实践1：客户端发送ping，服务器返回PONG</p>
+</blockquote>
+<p>客户端发送报文：</p>
+<p><img src="/images/20/ping.png" alt></p>
+<p>客户端接收报文：</p>
+<p><img src="/images/20/pong.png" alt></p>
+<blockquote>
+<p>实践2：客户端发送简单的SET指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ SET KEY VALUE</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<p>客户端发送报文</p>
+<p><img src="/images/20/set_cmd.png" alt></p>
+<p>客户端接收报文：</p>
+<p><img src="/images/20/set_return_ok.png" alt></p>
+<blockquote>
+<p>实践3：客户端发送错误的SET指令</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ SET KEY</span><br></pre></td></tr></table></figure>
+<p>客户端接收报文：</p>
+<p><img src="/images/20/set_return_error.png" alt></p>
+<h3 id="订阅发布模式"><a href="#订阅发布模式" class="headerlink" title="订阅发布模式"></a>订阅发布模式</h3><blockquote>
+<p>实践4：客户端使用SUBSCRIBE指令订阅</p>
+</blockquote>
+<p>客户端订阅主题“redis1”的发送报文：</p>
+<p><img src="/images/20/subscribe.png" alt></p>
+<p>redis1有消息推送时，客户端收到的报文：</p>
+<p><img src="/images/20/subscribe_return.png" alt></p>
+<p>使用SUBSCRIBE指令订阅，接收到的内容是数组，分为三部分：</p>
+<ul>
+<li>固定的message，表示该报文是一个订阅的内容</li>
+<li>订阅的主题</li>
+<li>具体消息内容</li>
+</ul>
+<blockquote>
+<p>实践5：客户端使用PSUBSCRIBE指令订阅</p>
+</blockquote>
+<p>两个客户端订阅主题模式“redis*”，一个客户端向“redis1”主题发布消息。</p>
+<p>发布客户端发送的报文：<br><img src="/images/20/multi_publish.png" alt></p>
+<p>发布客户段接收的报文：<br><img src="/images/20/multi_publish_recv.png" alt></p>
+<p>报文内容是数字形式的2，表示有两个订阅客户端收到了消息。</p>
+<p>订阅客户端接受的报文：<br><img src="/images/20/psub_recv.png" alt></p>
+<p>使用PSUBSCRIBE订阅主题模式，报文内容是数组，包括四部分：</p>
+<ul>
+<li>固定的pmessage，表示内容是订阅主题模式的消息</li>
+<li>订阅的主题模式</li>
+<li>具体发送消息的主题</li>
+<li>具体消息内容 </li>
+</ul>
+<h3 id="pipeline通信"><a href="#pipeline通信" class="headerlink" title="pipeline通信"></a>pipeline通信</h3><blockquote>
+<p>实践6：基于c语言hiredis库的pipeline通信</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;hiredis/hiredis.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span>&#123;</span><br><span class="line">    redisContext *c = redisConnect(<span class="string">"127.0.0.1"</span>, <span class="number">6379</span>);</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="literal">NULL</span> || c-&gt;err)&#123;</span><br><span class="line">        <span class="keyword">if</span>(c)&#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"Error: %s\n"</span>, c-&gt;errstr);</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"Can't allocate redis context\n"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> cmd[] = <span class="string">"set key0 value0"</span>;</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        cmd[<span class="number">7</span>] = i + <span class="string">'0'</span>;</span><br><span class="line">        cmd[<span class="number">14</span>] = i + <span class="string">'0'</span>;</span><br><span class="line">        redisAppendCommand(c, cmd);</span><br><span class="line">    &#125;</span><br><span class="line">    redisReply *reply;</span><br><span class="line">    redisGetReply(c, (<span class="keyword">void</span>*)&amp;reply);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, reply-&gt;str);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端发送内容：<br><img src="/images/20/pipeline_send.png" alt></p>
+<p>使用pipeline发送指令时，客户端只是把所有指令单纯连接在一起。</p>
+<p>并没有在外层使用额外的数组进行包裹。</p>
+<p>客户端接收内容：<br><img src="/images/20/pipeline_recv.png" alt></p>
+<p>对于每一条指令都有返回值。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p>Redis Protocol specification：<a href="https://redis.io/topics/protocol" target="_blank" rel="noopener">https://redis.io/topics/protocol</a></p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2021/04/25/24. [golang]结构体空指针可以调用成员方法会报错吗/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2020/08/08/21.C++冷知识（长期更新）/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "Redis底层协议原理与实践",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2020-08-08 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/Redis/">Redis<span>1</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/实践/">实践<span>2</span></a></li> <li><a href="/tags/底层原理/">底层原理<span>1</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#实践环境"><span class="toc-article-text">实践环境</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#基本概念"><span class="toc-article-text">基本概念</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#Simple-String"><span class="toc-article-text">Simple String</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#Bulk-String"><span class="toc-article-text">Bulk String</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#Integer"><span class="toc-article-text">Integer</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#Error"><span class="toc-article-text">Error</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#Array"><span class="toc-article-text">Array</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#通信实践"><span class="toc-article-text">通信实践</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#单指令通信"><span class="toc-article-text">单指令通信</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#订阅发布模式"><span class="toc-article-text">订阅发布模式</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#pipeline通信"><span class="toc-article-text">pipeline通信</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#参考链接"><span class="toc-article-text">参考链接</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>浅谈「领域事件」 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="领域事件是DDD，Event Sourcing等架构中的一个重要概念。
+基于工作环境中的一些实践经验，我总结了一些粗浅的体会。
+文中不会有非常高深复杂的定义，只使用一些基本的概念。">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="浅谈「领域事件」">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 浅谈「领域事件」</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>领域事件是DDD，Event Sourcing等架构中的一个重要概念。</p>
+<p>基于工作环境中的一些实践经验，我总结了一些粗浅的体会。</p>
+<p>文中不会有非常高深复杂的定义，只使用一些基本的概念。</p>
+<a id="more"></a>
+<hr>
+<h2 id="领域事件定义"><a href="#领域事件定义" class="headerlink" title="领域事件定义"></a>领域事件定义</h2><p>国外书籍中很少使用下定义的方式解释一个名词的含义。一般都会使用作诠释的方式：“领域事件可以怎样怎样”、“领域事件会带来什么什么”。</p>
+<p>让我来下定义的话：领域事件是微服务系统中各服务<strong>通信的一种方式</strong>。和RPC类似，领域事件用于在服务之间交换信息，但领域事件并不追求实时一致性，仅要求数据的最终一致性。</p>
+<p>各服务在一些关键有意义的业务节点完成后会发送领域事件，代表一些关键的动作「已完成」。因此领域事件的命名多采用过去分词，例如「订单已发送Order sent」「订单已取消Order canceled」。</p>
+<p>领域事件有多种实现方式。我工作中使用到的方式是：将一些关键的、其他服务可能用到的信息，打包成一个结构体，以消息的形式，通过消息队列中间件，异步传输给系统中订阅该消息的服务。</p>
+<h2 id="领域事件带来的收益"><a href="#领域事件带来的收益" class="headerlink" title="领域事件带来的收益"></a>领域事件带来的收益</h2><p>介绍领域事件的书籍从不吝惜对领域事件优点的赞美。在此我针对各优点谈谈自己的感受。</p>
+<h3 id="增强服务自治性"><a href="#增强服务自治性" class="headerlink" title="增强服务自治性"></a>增强服务自治性</h3><p>这大概是领域事件最常被提及的优点了。何谓“自治性”？我的理解是：一个服务只需要关注自己，不与其他服务耦合的程度。单体服务不依赖其他任何服务，自治性最高；如果一个服务调用了大量其他服务的RPC，那么它的稳定性和业务逻辑必定受其他服务的影响，自治性稍差。</p>
+<p>为什么能提升自治性？个人认为有以下原因：</p>
+<p>首先领域事件一般使用消息队列实现，消息队列是异步的，不会阻塞调用。如果因一时网络原因消息无法传达，那么也会由消息组件重试。领域事件可以看做<strong>异步的</strong>、<strong>非阻塞的</strong>、<strong>由第三方保证最终送达</strong>的RPC，可靠性比普通的RPC更高。</p>
+<p>另一点就是领域事件不必指定消息的接收方是谁。假设我们有这样的业务场景，A服务完成了某一动作后，需要通知B。如果我们使用RPC通信，后面业务扩展时增加了C，D服务需要通知，则实现时我们需要修改A的代码，A的业务逻辑可能还要受到C，D处理结果的影响。但是如果我们使用领域事件进行通信，则在新增C，D服务之后，让它们订阅A发出的事件即可，A服务完全不需要修改，不受其他服务的影响，提升了自治性。</p>
+<h3 id="回放系统动作"><a href="#回放系统动作" class="headerlink" title="回放系统动作"></a>回放系统动作</h3><p>如果我们把系统看做一个状态机，则领域事件可以看做推动状态机转移状态的输入。领域事件是具有业务含义的，回放某一时间段的领域事件可以复现用户操作。通过数据库binlog回放也可以达到类似的效果，但binlog是没有业务语义的，回放结果没有准确的解读方式。</p>
+<p>回放领域事件当然需要某种消息存储/检索机制，这里不做展开。</p>
+<h2 id="实践领域事件时的一些思考"><a href="#实践领域事件时的一些思考" class="headerlink" title="实践领域事件时的一些思考"></a>实践领域事件时的一些思考</h2><ul>
+<li><p>领域事件实时性<br>  领域事件可以保证最终一致性，但不能保证数据实时性。产生的时延是否是业务可以接受的？《实现领域驱动设计精粹》中进行了一个精妙的类比：在软件出现前，传统业务的执行流程是怎样的？流程步骤之间是否会有一定的时间差？如果领域事件导致的时延不超过无软件时业务流程的时延，那么这时延就是可以接受的。当然，实际生产环境中，说服用户接受这样的时延通常不是件容易的事情。</p>
+</li>
+<li><p>领域事件定义<br>  领域事件有业务语义，这个业务语义所代表的动作，必须要有明确的定义。例如：在一个招聘系统中，目前只有“现场面试签到”这一个场景。那么这个动作完成以后，应该发出「面试已签到」领域事件，还是发出「现场面试已签到」的领域事件呢？如果是前者，那么后续新增的其他类型面试签到，也要发出这个领域事件。领域事件的业务语义必须得到准确的解释，从命名开始。领域事件表示的动作粒度也要在定义前就想好。</p>
+</li>
+<li><p>领域事件管理<br>  目前我们有yAPI这样优秀的接口管理工具，但还没有合适的领域事件管理工具。领域事件和接口都是用于通信的手段，所以他们的含义，包括功能、每个字段含义等，必须得到准确的解释。否则当领域事件增加到一定规模，有人员更迭时，了解各个领域事件将成为恼火的事情。</p>
+</li>
+<li><p>向领域事件改造<br>  EDA是一种时髦的架构，但并非所有服务一开始就会选用这种架构。一个单纯由RPC通信的系统，想要转型到通过领域事件通信会遇到很多问题。我们系统遇到的一个现实问题是：太多的接口可能会发送同一种领域事件，如果在所有可能的代码后加上领域事件，很可能造成遗漏。我们系统对此的解决方案是：将领域事件发送收敛到数据库上。业务操作，最终的效果是修改数据库，那么我们就监听相应数据库的binglog，发出相应的领域事件。<br>  这种解决方案可能会有以下问题：<br>  首先一个领域事件可能对应不只一张表的修改。为了不遗漏领域事件，我们不得不监听多张表。每个表修改时，我们都会发出领域事件，这就导致业务上同一个领域事件可能会重复发送。幂等操作只能交给接收方来做了。<br>  监听binlog发送领域事件带来的另一个改造问题是消息中各字段的准确性问题。正常发送领域事件时，在业务处理的过程中就能获取领域事件的各个字段。但一张表上可能不会有完整的领域事件信息，需要反查其他表进行字段填充。某一业务操作会修改t1，t2两张表，A，B两个业务操作前后发生。A操作导致的t1 binlog消息到达了，查询t2表上的字段，此时t2却已经被B操作修改了，则反查出来的结果是B操作后的数据结果。那么拼装消息时，部分字段是A导致的，部分字段是B导致的，就会组装出一个没有真实发生的领域事件，可能对接收方有影响，具体影响还需要接收方想办法化解。</p>
+</li>
+<li><p>领域事件处理<br>处理消息逃不开的三个问题：幂等，重试，丢失。真实写代码时有太多细节需要注意，只能case by case的看了。</p>
+</li>
+</ul>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2021/05/09/25. [mongoDB] M001课程学习笔记/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2021/04/25/24. [golang]结构体空指针可以调用成员方法会报错吗/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "浅谈「领域事件」",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2021-04-29 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/知识总结/">知识总结<span>4</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/DDD/">DDD<span>2</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

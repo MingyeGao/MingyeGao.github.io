@@ -1,0 +1,410 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>多线程环境下，单例模式实现方式的思考 | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="学习Singlton设计模式课程时的一些总结
+实现语言为c++
+主要讨论多线程环境下，单例模式可能出现的错误
+以及C++11应对多线程环境的一种解决方案">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="多线程环境下，单例模式实现方式的思考">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 多线程环境下，单例模式实现方式的思考</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>学习Singlton设计模式课程时的一些总结</p>
+<p>实现语言为c++</p>
+<p>主要讨论多线程环境下，单例模式可能出现的错误</p>
+<p>以及C++11应对多线程环境的一种解决方案<br> <a id="more"></a></p>
+<hr>
+<p> 单例模式是设计模式中一个简单的创建型模式，它保证采用单例模式的类只能创建一个对象</p>
+<h3 id="单线程实现方式"><a href="#单线程实现方式" class="headerlink" title="单线程实现方式"></a>单线程实现方式</h3><p> 在c++实现中，类的声明如下所示：（代码1）</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*代码1：类的声明</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span>&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Singleton();<span class="comment">//*声明为private，使用者不能调用</span></span><br><span class="line">    Singleton(<span class="keyword">const</span> Singleton &amp;other);</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> Singleton* <span class="title">getInstance</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="keyword">static</span> Singleton* m_instance;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>通过将构造函数和拷贝构造函数声明为私有，单例模式的对象无法被拷贝或直接new，只能通过函数返回的方式构造。</p>
+<p>通过将m_instance和getInstance()声明为static，确保了单例对象的资源只有一份。</p>
+<p>下面是对象工厂的一种实现方式：（代码2）<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*代码2，线程非安全版本</span></span><br><span class="line">Singleton* Singleton::getInstance()&#123;</span><br><span class="line">    <span class="keyword">if</span>(m_instance == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">        m_instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码在单线程环境下是没有问题的：每当程序想要创建一个单例资源时，首先查看全局对象m_instance是否为nullptr，若是则创建对象，若不是则返回m_instance的值。</p>
+<p>但在多线程下这段代码会出现问题，例如：</p>
+<ul>
+<li>线程1判断m_instance为nullptr，即将创建单例资源时，发生了线程切换；</li>
+<li>线程2对m_instance进行了判断，因为此时线程1并没有创建资源，所以m_instance依旧为空，线程2会进行资源创建；</li>
+<li>切换回线程1时，线程1继续执行资源创建语句，那么就会创建出2个单例资源，与预期不符。</li>
+</ul>
+<h3 id="多线程下的几种实现方式讨论"><a href="#多线程下的几种实现方式讨论" class="headerlink" title="多线程下的几种实现方式讨论"></a>多线程下的几种实现方式讨论</h3><p>解决多线程环境下的问题，我们首要想到的手段肯定是加锁（多数情况下也是一个不那么高效的手段），代码如下所示：（代码3）<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*代码3，线程安全版本，但加锁代价太高</span></span><br><span class="line">Singleton* Singleton::getInstance()&#123;</span><br><span class="line">    Lock lock;</span><br><span class="line">    <span class="keyword">if</span>(m_instance == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">        m_instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> m_instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 但是这段代码有一定的额外开销。当读取一个内存而不改变其内容时，是不必加锁的，而代码3中在检查m_instance之前就对临界区进行了加锁。</p>
+<p> 当m_instance不为nullptr且多个线程要检查时，会引入很大的加锁开销，因此我们的想法是把加锁的语句向下移动：（代码4）</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*代码4，检查资源后加锁，但是是错误的</span></span><br><span class="line">Singleton* Singleton::getInstance()&#123;</span><br><span class="line">    <span class="keyword">if</span>(m_instance == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">        Lock lock;</span><br><span class="line">        m_instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> m_instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码4类似于代码1，有明显的问题：</p>
+<ul>
+<li>线程A检查m_instance发现为空后还未加锁，此时发生了线程切换；</li>
+<li>线程B检查m_instance为空，加锁，分配单例资源，解锁，线程切换回A；</li>
+<li>A会继续之前的上文，创建另一个单例资源，与预期不符。</li>
+</ul>
+<p>因此，我们引入了双检查锁版本：（代码5）<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*代码5 双检查锁版本，由于内存乱序不安全</span></span><br><span class="line">Singleton* Singleton::getInstance()&#123;</span><br><span class="line">    <span class="keyword">if</span>(m_instance == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">        Lock lock;</span><br><span class="line">        <span class="keyword">if</span>(m_instance == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">            m_instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> m_instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>一个线程在检查m_instance为空后，加锁后仍然检查一次m_instance是否为空，以防止在加锁之前出现线程切换，造成m_instance不为空的情况。</p>
+<p>乍看之下这段代码是没有问题的，但是在实际运行中却会发生问题，发生问题的语句在于<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">m_instance = <span class="keyword">new</span> Singleton();</span><br></pre></td></tr></table></figure></p>
+<p>在我们的预期中，这一句话隐含的执行顺序应该是：</p>
+<ul>
+<li><ol>
+<li>划分一块内存用于构造Singleton；</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>在这块内存上进行构造；</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>将这块内存的地址赋值给m_instance。</li>
+</ol>
+</li>
+</ul>
+<p>但是由于<strong>CPU乱序执行</strong>，这句代码在物理上先后执行的顺序可能是：</p>
+<ul>
+<li><ol>
+<li>划分一块内存用于构造Singleton；</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>将这块内存的地址赋值给m_instance；</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>在这块内存上进行构造。</li>
+</ol>
+</li>
+</ul>
+<p>那么在多线程环境下，可能造成的行为是：</p>
+<ul>
+<li><ol>
+<li>线程A划分了一块内存，将这块内存赋值给了m_instance，但没有完成构造，此时发生了线程切换；</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>线程B检查m_instance的值，发现不为空，于是返回一个地址并使用，但此时这个地址是未经过构造的，所以产生了问题。</li>
+</ol>
+</li>
+</ul>
+<p>因此，代码5是<strong>错误的</strong>。</p>
+<p>实际上，这种写法在最初甚至糊弄过了很多专家，被发现时也没有明确的解决办法，直到一些语言规则的更新解决了这个问题。</p>
+<p>c++11的<em>atomic</em>库中，规定了内存访问的一些顺序，例如：</p>
+<ul>
+<li>memory_order_relaxed（宽松操作）：没有同步或顺序制约，仅对此操作要求原子性</li>
+<li>memory_order_acquire ：有此内存顺序的加载操作，在其影响的内存位置进行<em>获得操作</em>：当前线程中读或写不能被重排到此加载前。其他释放同一原子变量的线程的所有写入，能为当前线程所见</li>
+<li>memory_order_release ：有此内存顺序的存储操作进行<em>释放操作</em>：当前线程中的读或写不能被重排到此存储后。当前线程的所有写入，可见于获得该同一原子变量的其他线程释放获得顺序，并且对该原子变量的带依赖写入变得对于其他消费同一原子对象的线程可见</li>
+</ul>
+<p>更多内存顺序请参考<a href="https://zh.cppreference.com/w/cpp/atomic/atomic_thread_fence" target="_blank" rel="noopener">相关手册</a></p>
+<p>具体实现代码如下：（代码6）<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*内存乱序，c++11解决方案(代码6)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span>&#123;</span></span><br><span class="line"><span class="keyword">private</span>: </span><br><span class="line">    Singleton()&#123;&#125;;</span><br><span class="line">    Singleton(<span class="keyword">const</span> Singleton &amp;other);</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">std</span>::atomic&lt;Singleton*&gt; m_instance;</span><br><span class="line">    <span class="built_in">std</span>::mutex m_mutex;</span><br><span class="line">    <span class="function">Singleton* <span class="title">getInstance</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Singleton* Singleton::getInstance()&#123;</span><br><span class="line">    Singleton *tmp = m_instance.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">    <span class="built_in">std</span>::atomic_thread_fence(<span class="built_in">std</span>::memory_order_acquire);<span class="comment">///内存屏障1</span></span><br><span class="line">    <span class="keyword">if</span>(tmp == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(m_mutex);</span><br><span class="line">        tmp = m_instance.load(<span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">        <span class="keyword">if</span>(tmp == <span class="literal">nullptr</span>)&#123;</span><br><span class="line">            tmp = <span class="keyword">new</span> Singleton();</span><br><span class="line">            <span class="built_in">std</span>::atomic_thread_fence(<span class="built_in">std</span>::memory_order_release);<span class="comment">///内存屏障2</span></span><br><span class="line">            m_instance.store(tmp, <span class="built_in">std</span>::memory_order_relaxed);</span><br><span class="line">        &#125;      </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tmp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码保证了读取m_instance的操作是原子性的，同时设立了两处内存屏障。我们再考虑代码5所经历的情况：</p>
+<ul>
+<li>单例对象还没有创建，线程A进入临近区，开始初始化。这期间可能存在线程切换</li>
+<li>线程A m_instance的store操作不会被重排到屏障1前，即线程B获取m_instance值时，若线程A没有初始化完成，只会获取到null值</li>
+<li>线程B的load操作不会被重排到内存屏障2后，不会发生在线程A已初始化但进行store之前，线程B读取了m_instance的值</li>
+</ul>
+<p>参考资料</p>
+<p>谈乱序执行与内存屏障： <a href="https://blog.csdn.net/dd864140130/article/details/56494925" target="_blank" rel="noopener">https://blog.csdn.net/dd864140130/article/details/56494925</a></p>
+<p>内存屏障wiki： <a href="https://zh.wikipedia.org/wiki/%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C</a> </p>
+<p>乱序执行wiki： <a href="https://zh.wikipedia.org/zh-hans/%E4%B9%B1%E5%BA%8F%E6%89%A7%E8%A1%8C" target="_blank" rel="noopener">https://zh.wikipedia.org/zh-hans/%E4%B9%B1%E5%BA%8F%E6%89%A7%E8%A1%8C</a></p>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2019/05/21/2.2019华为网络精英挑战赛总结/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+          <li class="next disabled"><a>下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "多线程环境下，单例模式实现方式的思考",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2019-04-10 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/知识总结/">知识总结<span>4</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/c/">c++<span>5</span></a></li> <li><a href="/tags/设计模式/">设计模式<span>1</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>

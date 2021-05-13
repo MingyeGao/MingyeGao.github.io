@@ -1,0 +1,384 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>编译带有debug模式的MySQL | MingyeGao&#39;s Blog</title>
+  <meta name="author" content="MingyeGao">
+  
+  <meta name="description" content="根据手册和网络上的一些资料，把MySQL源码编译安装的步骤走了一遍，踩了一些坑。
+在此记录一下">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="编译带有debug模式的MySQL">
+  <meta property="og:site_name" content="MingyeGao&#39;s Blog">
+
+  
+    <meta property="og:image" content>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/themes/flatly.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight-default.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/comment.css" media="screen" type="text/css">
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.9/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+  
+    <script src="/js/marked.js"></script>
+    <script src="/js/comment.js"></script>
+    <script src="/js/timeago.min.js"></script>
+    <script src="/js/highlight.min.js"></script>
+	<script src="/js/spin.min.js"></script>
+  
+  <!-- analytics -->
+  
+
+
+
+</head>
+
+<body>
+  <nav id="main-nav" class="navbar navbar-inverse navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+	<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+       <a class="navbar-brand" href="/">MingyeGao&#39;s Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+    <div class="content">
+      
+
+
+	
+		<div class="page-header page-header-inverse ">		
+			<h1 class="title title-inverse "> 编译带有debug模式的MySQL</h1>
+		</div>		
+	
+
+
+
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>根据手册和网络上的一些资料，把MySQL源码编译安装的步骤走了一遍，踩了一些坑。</p>
+<p>在此记录一下</p>
+<a id="more"></a>
+<hr>
+<hr>
+<h2 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h2><p>所有操作在腾讯云服务器上进行</p>
+<p>操作系统： Ubuntu 18.04</p>
+<p>mysql版本：5.7</p>
+<h2 id="获取源代码"><a href="#获取源代码" class="headerlink" title="获取源代码"></a>获取源代码</h2><p>方法一：从github上获取源代码。选择5.7版本，clone即可<br><img src="/images/19/1.jpg" alt></p>
+<p>方法二：在官网下载。Operating System选择Source Code即可。</p>
+<p>（话说源码为什么要在操作系统的分类下呀，找了好久 -_-|||）<br><img src="/images/19/2.jpg" alt></p>
+<h2 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h2><p>编译mysql需要以下依赖：</p>
+<ul>
+<li>c++ boost库（官方手册指明 mysql5.7 需要 libboost1.59）</li>
+<li>ssl</li>
+<li>ncurses库</li>
+<li>pkg-config</li>
+<li>bison</li>
+</ul>
+<h3 id="安装boost"><a href="#安装boost" class="headerlink" title="安装boost"></a>安装boost</h3><p>libboost可以从官网下载安装，也可以在编译mysql时也，指定cmake的编译选项直接下载安装。</p>
+<p>这里我是官网下载安装的，cmake时下载安装速度较慢。</p>
+<p>从官网找到对应的版本，通过wget下载到本地，解压，然后进入文件夹。</p>
+<p>通过bootstrap.sh进行配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./bootstrap.sh --prefix=/usr/local/lib/boost1_59_0</span><br></pre></td></tr></table></figure></p>
+<p>安装在/usr/local及其子目录下需要root权限。</p>
+<p>如果不指定prefix，boost会直接安装到/usr/local下，如果以后安装不同版本的boost库可能会造成困扰。所以我新建了一个标明版本的文件夹。</p>
+<p>运行bootstrap后会生成b2，运行以安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./b2 install</span><br></pre></td></tr></table></figure></p>
+<p>安装后/usr/local/lib/boost1_59_0目录下会生成inclue和lib两个文件夹。</p>
+<p>include中包含头文件，lib中包含编译出的动态链接库和静态链接库。</p>
+<h3 id="其他依赖"><a href="#其他依赖" class="headerlink" title="其他依赖"></a>其他依赖</h3><p>安装ssl<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install openssl</span><br></pre></td></tr></table></figure></p>
+<p>安装ncurses<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libncurses-dev</span><br></pre></td></tr></table></figure></p>
+<p>安装pkg-config<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install pkg-config</span><br></pre></td></tr></table></figure></p>
+<p>安装bison<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install bison</span><br></pre></td></tr></table></figure></p>
+<h2 id="编译安装"><a href="#编译安装" class="headerlink" title="编译安装"></a>编译安装</h2><p>通过cmake生成Makefile文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -DWITH_DEBUG=1 . -DDOWNLOAD_BOOST=0 -DWITH_BOOST=/usr/local/lib/boost_1_59_0/include -DWITH_SSL=system</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>-DWITH_DEBUG=1 表示开启调试模式</li>
+<li>-DDOWNLOAD_BOOST=0 关闭boost库自动下载，默认似乎是打开的。</li>
+<li>-DWITH_BOOST=/usr/local/lib/boost_1_59_0/include 指明boost库的的位置。经过实验这里需要boost库下include文件夹的位置。</li>
+<li>-DWITH_SSL=system 安装ssl后，指明为system</li>
+</ul>
+<p>编译：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make</span><br></pre></td></tr></table></figure></p>
+<p>安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p>
+<h2 id="配置与初始化"><a href="#配置与初始化" class="headerlink" title="配置与初始化"></a>配置与初始化</h2><p>完成编译安装之后，需要进行如下几个步骤：</p>
+<ul>
+<li><p>创建用于使用mysql的用户组和用户</p>
+</li>
+<li><p>初始化数据文件夹</p>
+</li>
+<li><p>设置密码</p>
+<h3 id="创建用户与用户组"><a href="#创建用户与用户组" class="headerlink" title="创建用户与用户组"></a>创建用户与用户组</h3><p>手册链接：<a href="https://dev.mysql.com/doc/refman/5.7/en/binary-installation.html#binary-installation-createsysuser" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/binary-installation.html#binary-installation-createsysuser</a></p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo groupadd mysql</span><br><span class="line">sudo useradd -r -g mysql -s /bin/false mysql</span><br></pre></td></tr></table></figure>
+<h3 id="初始化数据文件夹"><a href="#初始化数据文件夹" class="headerlink" title="初始化数据文件夹"></a>初始化数据文件夹</h3><p>手册链接：<a href="https://dev.mysql.com/doc/refman/5.7/en/data-directory-initialization.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/data-directory-initialization.html</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/mysql</span><br><span class="line">mkdir mysql-files</span><br><span class="line">chown mysql:mysql mysql-files</span><br><span class="line">chmod 750 mysql-files</span><br><span class="line"># 初始化数据文件夹</span><br><span class="line">bin/mysqld --initialize --user=mysql</span><br></pre></td></tr></table></figure></p>
+<p>初始化也可以使用语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/mysqld --initialize-insecure --user=mysql</span><br></pre></td></tr></table></figure></p>
+<p>区别是–initialize选项会mysql的root用户生成随机密码；随机生成的密码会打印在屏幕上。如果没记录下来，删除文件夹重新生成一次就好了。</p>
+<p>–initialize-insecure不会为root生成密码。</p>
+<h3 id="安装客户端"><a href="#安装客户端" class="headerlink" title="安装客户端"></a>安装客户端</h3><p>这里我采用包管理工具的方式安装了客户端<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install mysql-client</span><br></pre></td></tr></table></figure></p>
+<h3 id="第一次连接"><a href="#第一次连接" class="headerlink" title="第一次连接"></a>第一次连接</h3><p>连接客户端：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure></p>
+<p>终端会提示输入密码，输入刚才初始化时生成的随机密码即可。</p>
+<p>如果显示socket错误，用-S字段指定服务端侦听的套接字。</p>
+<p>出于安全考虑，此时服务器会要求你修改密码，无法执行其他语句。</p>
+<p>使用如下的语句修改密码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER USER &apos;root&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;root-password&apos;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="终止服务端"><a href="#终止服务端" class="headerlink" title="终止服务端"></a>终止服务端</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/mysql/bin/mysqladmin -u root -p shutdown;</span><br></pre></td></tr></table></figure>
+	  
+	</div>
+
+	<!-- recommended posts -->
+	
+
+	<div>
+  	<center>
+	<div class="pagination">
+<ul class="pagination">
+	 
+				
+    	<li class="prev"><a href="/2020/08/08/22.C++疑难杂症（长期更新）/" class="alignleft prev"><i class="fa fa-arrow-circle-o-left"></i>上一页</a></li>
+  		
+
+        <li><a href="/archives"><i class="fa fa-archive"></i>Archive</a></li>
+
+		
+		   <li class="next"><a href="/2019/11/13/18.ATourOfGo/" class="alignright next">下一页<i class="fa fa-arrow-circle-o-right"></i></a></li>         
+        
+	
+</ul>
+</div>
+
+    </center>
+	</div>
+
+    <!-- share -->
+    
+        
+    <div class="bdsharebuttonbox">
+        <a href="#" class="bds_more" data-cmd="more"></a>
+        <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+        <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+        <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+        <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+        <a href="#" class="bds_linkedin" data-cmd="linkedin" title="分享到linkedin"></a>
+        <a href="#" class="bds_evernotecn" data-cmd="evernotecn" title="分享到印象笔记"></a>
+        <a href="#" class="bds_youdao" data-cmd="youdao" title="分享到有道云笔记"></a>
+        <a href="#" class="bds_copy" data-cmd="copy" title="分享到复制网址"></a>
+    </div>
+    <script>
+        window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"1","bdSize":"24"},"share":{}};
+        with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+    </script>
+
+
+        
+
+    
+	
+	<!-- comment -->
+	
+<section id="comment">
+  <h2 class="title">留言</h2>
+    	 
+	 <div id="comment-thread"></div>
+	 <div id="loading-spin"></div>
+	 <script type="text/javascript">
+	   getComments({
+           type: "github" ? "github" : "github",       
+	       user: "wzpan",
+	       repo: "hexo-theme-freemind-blog",
+		   client_id: "bf7d4ba11877db88543e",
+           client_secret: "bff8a6b06b745c0bfcdccbe225623ea8e2a057bb",
+		   no_comment: "暂时还没有留言呢，点击下面的按钮去留言吧！",
+		   go_to_comment: "去留言",
+		   no_issue: "no_issue",
+		   issue_title: "编译带有debug模式的MySQL",
+		   issue_id: "",
+		   btn_class: "btn btn-primary",
+		   comments_target: "#comment-thread",
+		   loading_target: "#loading_spin"
+		   });
+	 </script>
+  
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2020-02-24 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    </li><li><a href="/categories/Mysql/">Mysql<span>1</span></a></li>
+  
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/实践/">实践<span>2</span></a></li>
+    </ul>
+	</div>
+	
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#环境说明"><span class="toc-article-text">环境说明</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#获取源代码"><span class="toc-article-text">获取源代码</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#安装依赖"><span class="toc-article-text">安装依赖</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#安装boost"><span class="toc-article-text">安装boost</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#其他依赖"><span class="toc-article-text">其他依赖</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#编译安装"><span class="toc-article-text">编译安装</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#配置与初始化"><span class="toc-article-text">配置与初始化</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#创建用户与用户组"><span class="toc-article-text">创建用户与用户组</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#初始化数据文件夹"><span class="toc-article-text">初始化数据文件夹</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#安装客户端"><span class="toc-article-text">安装客户端</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#第一次连接"><span class="toc-article-text">第一次连接</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#终止服务端"><span class="toc-article-text">终止服务端</span></a></li></ol></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+
+
+    </div>
+  </div>
+  <div class="container-narrow">
+    <footer> <p>
+  &copy; 2021 MingyeGao
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a> and <a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a>. Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>.    
+</p> </footer>
+  </div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>▲</span> 
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+
+<!-- syntax highlighting -->
+
+  <script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+        return hljs.highlightAuto(code).value;
+    }
+  });
+  function Highlighting(){
+    var markdowns = document.getElementsByClassName('markdown');
+    for(var i=0;i<markdowns.length;i++){
+        if(markdowns[i].innerHTML) markdowns[i].innerHTML =marked(markdowns[i].innerHTML);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', Highlighting, false);
+  window.addEventListener('load', Highlighting, false);
+  </script>
+
+
+</body>
+</html>
